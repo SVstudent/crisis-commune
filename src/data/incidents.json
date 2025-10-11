@@ -1,0 +1,78 @@
+{
+  "incidents": [
+    {
+      "id": "INC-001",
+      "type": "Medical Emergency",
+      "severity": "high",
+      "confidence": 0.92,
+      "status": "confirmed",
+      "location": {
+        "lat": 37.7749,
+        "lng": -122.4194,
+        "address": "123 Market Street, San Francisco, CA"
+      },
+      "timestamp": "2025-01-15T10:30:00Z",
+      "description": "Cardiac emergency reported"
+    },
+    {
+      "id": "INC-002",
+      "type": "Fire Alarm",
+      "severity": "medium",
+      "confidence": 0.78,
+      "status": "candidate",
+      "location": {
+        "lat": 37.7849,
+        "lng": -122.4094,
+        "address": "456 Mission Street, San Francisco, CA"
+      },
+      "timestamp": "2025-01-15T10:25:00Z",
+      "description": "Smoke detector activation"
+    },
+    {
+      "id": "INC-003",
+      "type": "Traffic Accident",
+      "severity": "medium",
+      "confidence": 0.85,
+      "status": "candidate",
+      "location": {
+        "lat": 37.7649,
+        "lng": -122.4294,
+        "address": "789 Valencia Street, San Francisco, CA"
+      },
+      "timestamp": "2025-01-15T10:20:00Z",
+      "description": "Multi-vehicle collision reported"
+    }
+  ],
+  "resources": [
+    {
+      "id": "EMT-042",
+      "type": "ambulance",
+      "status": "responding",
+      "location": {
+        "lat": 37.7799,
+        "lng": -122.4144
+      },
+      "assignedTo": "INC-001"
+    },
+    {
+      "id": "FIRE-023",
+      "type": "fire",
+      "status": "available",
+      "location": {
+        "lat": 37.7899,
+        "lng": -122.4044
+      },
+      "assignedTo": null
+    },
+    {
+      "id": "POL-117",
+      "type": "police",
+      "status": "available",
+      "location": {
+        "lat": 37.7599,
+        "lng": -122.4344
+      },
+      "assignedTo": null
+    }
+  ]
+}
