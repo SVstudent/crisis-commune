@@ -184,11 +184,6 @@ export default function Dashboard() {
                   isSpeaking={isSpeaking}
                   onClick={handleVoiceClick}
                 />
-                {isListening && interimTranscript && (
-                  <p className="mt-6 text-sm text-muted-foreground italic text-center max-w-md">
-                    "{interimTranscript}"
-                  </p>
-                )}
                 {!isListening && !isSpeaking && (
                   <p className="mt-6 text-sm text-muted-foreground text-center">
                     Click to start speaking
@@ -200,6 +195,40 @@ export default function Dashboard() {
                   </p>
                 )}
               </div>
+
+              {/* Live Transcript */}
+              {isListening && (
+                <Card className="border-primary/50 bg-primary/5">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-sm font-medium">Live Transcript</CardTitle>
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                        <span className="text-xs text-muted-foreground">Recording</span>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="min-h-[60px] max-h-[120px] overflow-y-auto">
+                      {transcript || interimTranscript ? (
+                        <p className="text-sm leading-relaxed">
+                          <span className="text-foreground">{transcript}</span>
+                          {interimTranscript && (
+                            <span className="text-muted-foreground italic">
+                              {transcript && " "}
+                              {interimTranscript}
+                            </span>
+                          )}
+                        </p>
+                      ) : (
+                        <p className="text-sm text-muted-foreground italic">
+                          Start speaking...
+                        </p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Conversation History */}
               <div>
