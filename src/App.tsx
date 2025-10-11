@@ -4,13 +4,12 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/AppSidebar";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { Navbar } from "@/components/Navbar";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import MapView from "./pages/MapView";
-import Activity from "./pages/Activity";
+import Agents from "./pages/Agents";
+import Logs from "./pages/Logs";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -28,27 +27,19 @@ const App = () => (
             <Route
               path="/*"
               element={
-                <SidebarProvider>
-                  <div className="flex min-h-screen w-full">
-                    <AppSidebar />
-                    <div className="flex-1 flex flex-col">
-                      <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-6">
-                        <SidebarTrigger />
-                        <div className="flex-1" />
-                        <ThemeToggle />
-                      </header>
-                      <main className="flex-1 p-6">
-                        <Routes>
-                          <Route path="/dashboard" element={<Dashboard />} />
-                          <Route path="/map" element={<MapView />} />
-                          <Route path="/activity" element={<Activity />} />
-                          <Route path="/settings" element={<Settings />} />
-                          <Route path="*" element={<NotFound />} />
-                        </Routes>
-                      </main>
-                    </div>
-                  </div>
-                </SidebarProvider>
+                <div className="min-h-screen bg-background">
+                  <Navbar />
+                  <main className="container px-4 md:px-8 py-8">
+                    <Routes>
+                      <Route path="/dashboard" element={<Dashboard />} />
+                      <Route path="/map" element={<MapView />} />
+                      <Route path="/agents" element={<Agents />} />
+                      <Route path="/logs" element={<Logs />} />
+                      <Route path="/settings" element={<Settings />} />
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </main>
+                </div>
               }
             />
           </Routes>

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Activity, Shield, Zap, Network } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Navbar } from "@/components/Navbar";
 
 const features = [
   {
@@ -30,6 +31,8 @@ const features = [
 export default function Home() {
   return (
     <div className="min-h-screen bg-background">
+      <Navbar />
+      
       {/* Hero Section */}
       <section className="relative overflow-hidden py-20 px-4 sm:px-6 lg:px-8">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-background" />
@@ -63,8 +66,8 @@ export default function Home() {
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="text-lg px-8">
-                <Link to="/map">
-                  Live Map
+                <Link to="/agents">
+                  View Agents
                 </Link>
               </Button>
             </div>

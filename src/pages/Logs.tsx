@@ -78,7 +78,7 @@ const typeConfig = {
   },
 };
 
-export default function Activity() {
+export default function Logs() {
   return (
     <div className="space-y-6">
       <div>
