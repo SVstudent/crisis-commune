@@ -1,0 +1,92 @@
+{
+  "transcripts": [
+    {
+      "id": "TRANS-001",
+      "title": "Vehicle Collision - Multiple Injuries",
+      "transcript": "911, what's your emergency? There's been a terrible car accident at the intersection of Jefferson Street and 7th Avenue. Multiple cars involved, I can see at least three people injured. One person is unconscious. Please send help immediately! The traffic light is out and cars keep coming. We need ambulances and police right away.",
+      "metadata": {
+        "duration": "45 seconds",
+        "caller_location": "Jefferson St & 7th Ave, San Francisco",
+        "expected_severity": "High",
+        "expected_units": ["Medic 2", "Engine 5", "Police Unit 12"]
+      }
+    },
+    {
+      "id": "TRANS-002",
+      "title": "Medical Emergency - Cardiac Event",
+      "transcript": "Help! My husband is having chest pains and difficulty breathing. He's 62 years old and has a history of heart problems. He's sitting down but he looks really pale and sweaty. We're at 123 Market Street, apartment 4B. Please hurry, I think he's having a heart attack!",
+      "metadata": {
+        "duration": "38 seconds",
+        "caller_location": "123 Market Street, San Francisco, CA",
+        "expected_severity": "High",
+        "expected_units": ["Medic 7", "AMR Ambulance"]
+      }
+    },
+    {
+      "id": "TRANS-003",
+      "title": "Fire Alarm - Commercial Building",
+      "transcript": "This is the building manager at 456 Mission Street. Our fire alarm system has been activated on the 3rd floor. I can smell smoke coming from one of the offices. The building is being evacuated now, about 50 people inside. We need the fire department here immediately.",
+      "metadata": {
+        "duration": "32 seconds",
+        "caller_location": "456 Mission Street, San Francisco, CA",
+        "expected_severity": "Medium",
+        "expected_units": ["Engine 1", "Truck 3", "Battalion Chief"]
+      }
+    },
+    {
+      "id": "TRANS-004",
+      "title": "Domestic Disturbance",
+      "transcript": "I'm calling about my neighbor in apartment 5B at 321 Oak Street. I can hear loud arguing and what sounds like things being thrown. There's a woman screaming for help. I'm worried someone might get hurt. This has been going on for about 10 minutes now.",
+      "metadata": {
+        "duration": "28 seconds",
+        "caller_location": "321 Oak Street, San Francisco, CA",
+        "expected_severity": "High",
+        "expected_units": ["Police Unit 15", "Police Unit 22"]
+      }
+    },
+    {
+      "id": "TRANS-005",
+      "title": "Minor Traffic Incident",
+      "transcript": "Hi, I need to report a minor fender bender at Valencia Street near 16th. Two cars bumped into each other, no injuries, but they're blocking one lane. Both drivers are out of their vehicles and exchanging information. Just thought you should know for traffic purposes.",
+      "metadata": {
+        "duration": "25 seconds",
+        "caller_location": "Valencia St & 16th St, San Francisco",
+        "expected_severity": "Low",
+        "expected_units": ["Police Unit 8"]
+      }
+    },
+    {
+      "id": "TRANS-006",
+      "title": "Suspected Break-In",
+      "transcript": "I just got home and my front door is wide open. I didn't leave it that way. I can see from outside that drawers are pulled out and things are on the floor. I haven't gone inside yet. This is at 789 Valencia Street. Can you send police? I'm scared the person might still be inside.",
+      "metadata": {
+        "duration": "35 seconds",
+        "caller_location": "789 Valencia Street, San Francisco, CA",
+        "expected_severity": "Medium",
+        "expected_units": ["Police Unit 19", "Police Unit 7"]
+      }
+    },
+    {
+      "id": "TRANS-007",
+      "title": "Gas Leak Suspected",
+      "transcript": "There's a really strong smell of gas on our street, near the corner of Polk and California. Multiple neighbors are smelling it. It started about 5 minutes ago and it's getting stronger. We're evacuating people from their homes. Please send the gas company and fire department right away.",
+      "metadata": {
+        "duration": "30 seconds",
+        "caller_location": "Polk St & California St, San Francisco",
+        "expected_severity": "High",
+        "expected_units": ["Engine 2", "Hazmat Team", "PG&E Emergency"]
+      }
+    },
+    {
+      "id": "TRANS-008",
+      "title": "Elderly Person Fall",
+      "transcript": "My mother fell in her bathroom and can't get up. She's 78 years old and says her hip really hurts. She's conscious and talking but in a lot of pain. We're at 555 Geary Boulevard, unit 12. She takes blood thinners so I'm worried.",
+      "metadata": {
+        "duration": "33 seconds",
+        "caller_location": "555 Geary Boulevard, San Francisco, CA",
+        "expected_severity": "Medium",
+        "expected_units": ["Medic 4"]
+      }
+    }
+  ]
+}
