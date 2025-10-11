@@ -1,0 +1,124 @@
+{
+  "logs": [
+    {
+      "id": "LOG-001",
+      "timestamp": "2025-01-15T10:30:45Z",
+      "agent": "Intake Agent",
+      "action": "Processed emergency call audio",
+      "confidence": 0.95,
+      "outcome": "Successfully extracted caller information and emergency details"
+    },
+    {
+      "id": "LOG-002",
+      "timestamp": "2025-01-15T10:30:52Z",
+      "agent": "Geo Locator",
+      "action": "Geocoded incident location",
+      "confidence": 0.92,
+      "outcome": "Location confirmed at 123 Market Street, San Francisco, CA"
+    },
+    {
+      "id": "LOG-003",
+      "timestamp": "2025-01-15T10:31:03Z",
+      "agent": "Severity Analyzer",
+      "action": "Assessed incident severity",
+      "confidence": 0.88,
+      "outcome": "Classified as HIGH priority medical emergency"
+    },
+    {
+      "id": "LOG-004",
+      "timestamp": "2025-01-15T10:31:10Z",
+      "agent": "Dispatcher",
+      "action": "Dispatched response units",
+      "confidence": 0.97,
+      "outcome": "EMT-042 and FIRE-023 dispatched, ETA 5 minutes"
+    },
+    {
+      "id": "LOG-005",
+      "timestamp": "2025-01-15T10:25:32Z",
+      "agent": "Intake Agent",
+      "action": "Processed emergency call audio",
+      "confidence": 0.78,
+      "outcome": "Fire alarm activation detected, requires verification"
+    },
+    {
+      "id": "LOG-006",
+      "timestamp": "2025-01-15T10:25:45Z",
+      "agent": "Geo Locator",
+      "action": "Geocoded incident location",
+      "confidence": 0.85,
+      "outcome": "Location identified at 456 Mission Street, San Francisco, CA"
+    },
+    {
+      "id": "LOG-007",
+      "timestamp": "2025-01-15T10:26:01Z",
+      "agent": "Severity Analyzer",
+      "action": "Assessed incident severity",
+      "confidence": 0.72,
+      "outcome": "Classified as MEDIUM priority, automated alarm system"
+    },
+    {
+      "id": "LOG-008",
+      "timestamp": "2025-01-15T10:20:15Z",
+      "agent": "Intake Agent",
+      "action": "Processed emergency call audio",
+      "confidence": 0.91,
+      "outcome": "Traffic accident reported with possible injuries"
+    },
+    {
+      "id": "LOG-009",
+      "timestamp": "2025-01-15T10:20:28Z",
+      "agent": "Geo Locator",
+      "action": "Geocoded incident location",
+      "confidence": 0.89,
+      "outcome": "Location confirmed at 789 Valencia Street intersection"
+    },
+    {
+      "id": "LOG-010",
+      "timestamp": "2025-01-15T10:20:42Z",
+      "agent": "Severity Analyzer",
+      "action": "Assessed incident severity",
+      "confidence": 0.83,
+      "outcome": "Classified as MEDIUM priority, minor injuries suspected"
+    },
+    {
+      "id": "LOG-011",
+      "timestamp": "2025-01-15T10:20:55Z",
+      "agent": "Dispatcher",
+      "action": "Dispatched response units",
+      "confidence": 0.94,
+      "outcome": "POL-117 and EMT-042 dispatched, ETA 7 minutes"
+    },
+    {
+      "id": "LOG-012",
+      "timestamp": "2025-01-15T10:15:20Z",
+      "agent": "Intake Agent",
+      "action": "Processed emergency call audio",
+      "confidence": 0.96,
+      "outcome": "Domestic disturbance call with clear details"
+    },
+    {
+      "id": "LOG-013",
+      "timestamp": "2025-01-15T10:15:35Z",
+      "agent": "Geo Locator",
+      "action": "Geocoded incident location",
+      "confidence": 0.94,
+      "outcome": "Precise location at 321 Oak Street, Apartment 5B"
+    },
+    {
+      "id": "LOG-014",
+      "timestamp": "2025-01-15T10:15:48Z",
+      "agent": "Severity Analyzer",
+      "action": "Assessed incident severity",
+      "confidence": 0.87,
+      "outcome": "Classified as HIGH priority due to safety concerns"
+    },
+    {
+      "id": "LOG-015",
+      "timestamp": "2025-01-15T10:16:02Z",
+      "agent": "Dispatcher",
+      "action": "Dispatched response units",
+      "confidence": 0.98,
+      "outcome": "POL-203 and POL-117 dispatched, ETA 3 minutes"
+    }
+  ]
+}
