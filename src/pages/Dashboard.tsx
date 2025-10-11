@@ -178,38 +178,38 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Voice Bubble */}
-              <div className="flex flex-col items-center py-8">
+              <div className="flex flex-col items-center py-6">
                 <VoiceBubble
                   isListening={isListening}
                   isSpeaking={isSpeaking}
                   onClick={handleVoiceClick}
                 />
                 {!isListening && !isSpeaking && (
-                  <p className="mt-6 text-sm text-muted-foreground text-center">
+                  <p className="mt-4 text-sm text-muted-foreground text-center">
                     Click to start speaking
                   </p>
                 )}
                 {isSpeaking && (
-                  <p className="mt-6 text-sm text-primary font-medium text-center">
+                  <p className="mt-4 text-sm text-primary font-medium text-center">
                     AI Operator speaking...
                   </p>
                 )}
               </div>
 
               {/* Live Transcript */}
-              {isListening && (
-                <Card className="border-primary/50 bg-primary/5">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-sm font-medium">Live Transcript</CardTitle>
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                        <span className="text-xs text-muted-foreground">Recording</span>
-                      </div>
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold">Live Transcript</h3>
+                  {isListening && (
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-destructive rounded-full animate-pulse" />
+                      <span className="text-xs text-muted-foreground">Recording</span>
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="min-h-[60px] max-h-[120px] overflow-y-auto">
+                  )}
+                </div>
+                <Card className={isListening ? "border-primary/50 bg-primary/5" : ""}>
+                  <CardContent className="p-4">
+                    <div className="min-h-[80px] max-h-[120px] overflow-y-auto">
                       {transcript || interimTranscript ? (
                         <p className="text-sm leading-relaxed">
                           <span className="text-foreground">{transcript}</span>
@@ -222,17 +222,17 @@ export default function Dashboard() {
                         </p>
                       ) : (
                         <p className="text-sm text-muted-foreground italic">
-                          Start speaking...
+                          {isListening ? "Start speaking..." : "Transcript will appear here when you speak"}
                         </p>
                       )}
                     </div>
                   </CardContent>
                 </Card>
-              )}
+              </div>
 
               {/* Conversation History */}
               <div>
-                <h3 className="font-semibold mb-4">Conversation History</h3>
+                <h3 className="font-semibold mb-3">Conversation History</h3>
                 <ConversationHistory messages={messages} />
               </div>
             </CardContent>
