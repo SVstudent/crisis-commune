@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { VoiceBubble } from "@/components/VoiceBubble";
 import { ConversationHistory, Message } from "@/components/ConversationHistory";
 import { AgentResponseFeed, AgentResponse } from "@/components/AgentResponseFeed";
+import { IncidentSummary } from "@/components/IncidentSummary";
 import { useVoiceRecognition } from "@/hooks/useVoiceRecognition";
 import { useToast } from "@/hooks/use-toast";
 
@@ -11,6 +12,14 @@ export default function Dashboard() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [agentResponses, setAgentResponses] = useState<AgentResponse[]>([]);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [incidentData, setIncidentData] = useState<{
+    incidentType?: string;
+    location?: string;
+    coordinates?: string;
+    severity?: "low" | "medium" | "high" | "critical";
+    recommendedUnits?: string[];
+    eta?: string;
+  }>({});
   const { toast } = useToast();
 
   const {
@@ -66,8 +75,9 @@ export default function Dashboard() {
 
   // Simulate AI response with text-to-speech
   const processEmergencyCall = async (text: string) => {
-    // Clear previous agent responses
+    // Clear previous agent responses and incident data
     setAgentResponses([]);
+    setIncidentData({});
 
     // Simulate agent processing
     const responses: AgentResponse[] = [
@@ -119,8 +129,19 @@ export default function Dashboard() {
       );
     }
 
+    // Set incident data after agent processing
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    setIncidentData({
+      incidentType: "Multi-Vehicle Traffic Collision",
+      location: "Jefferson St & 7th Ave, San Francisco, CA",
+      coordinates: "37.7749° N, 122.4194° W",
+      severity: "high",
+      recommendedUnits: ["Medic 2", "Engine 5", "Police Unit 12", "Backup Ambulance"],
+      eta: "5-7 minutes",
+    });
+
     // Generate AI response
-    const aiResponse = 
+    const aiResponse =
       "Thank you for reporting. Emergency services have been notified. Help is on the way. " +
       "Medic 2 and Engine 5 are responding with an estimated arrival time of 5 to 7 minutes. " +
       "Please stay on the line and keep the injured safe.";
@@ -234,6 +255,18 @@ export default function Dashboard() {
               <div>
                 <h3 className="font-semibold mb-3">Conversation History</h3>
                 <ConversationHistory messages={messages} />
+              </div>
+
+              {/* Incident Summary */}
+              <div>
+                <IncidentSummary
+                  incidentType={incidentData.incidentType}
+                  location={incidentData.location}
+                  coordinates={incidentData.coordinates}
+                  severity={incidentData.severity}
+                  recommendedUnits={incidentData.recommendedUnits}
+                  eta={incidentData.eta}
+                />
               </div>
             </CardContent>
           </Card>
