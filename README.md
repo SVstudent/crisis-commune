@@ -1,73 +1,185 @@
-# Welcome to your Lovable project
+# Crisis Commune - Emergency Response Management System
 
-## Project info
+A full-stack application for managing emergency response operations with AI agents and **Deepgram-powered voice recognition**.
 
-**URL**: https://lovable.dev/projects/e6724fa2-879a-4c7e-aaec-9b08a4ce53e0
+## Project Structure
 
-## How can I edit this code?
+```
+crisis-commune-1/
+├── backend/          # Python Flask API with Deepgram integration
+│   ├── app.py       # Main Flask application
+│   ├── models.py    # Database models
+│   ├── routes.py    # API routes
+│   ├── deepgram_agent.py  # Deepgram voice agent
+│   ├── requirements.txt
+│   └── setup.sh     # Backend setup script
+├── frontend/         # React Vite TypeScript
+│   ├── src/         # React source code
+│   │   ├── hooks/useDeepgramVoice.ts  # Deepgram voice hook
+│   │   └── components/DeepgramVoiceBubble.tsx  # Voice interface
+│   ├── public/      # Static assets
+│   ├── package.json
+│   └── vite.config.ts
+├── setup-deepgram.sh # Complete setup script
+└── README.md
+```
 
-There are several ways of editing your application.
+## 🚀 Quick Start
 
-**Use Lovable**
+### Option 1: Automated Setup (Recommended)
+```bash
+# Run the complete setup script
+./setup-deepgram.sh
+```
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/e6724fa2-879a-4c7e-aaec-9b08a4ce53e0) and start prompting.
+### Option 2: Manual Setup
 
-Changes made via Lovable will be committed automatically to this repo.
+#### 1. Backend Setup
+```bash
+cd backend
 
-**Use your preferred IDE**
+# Create and activate virtual environment
+python3 -m venv venv
+source venv/bin/activate
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+# Install dependencies
+pip install -r requirements.txt
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+# Create environment file
+cat > .env << EOF
+FLASK_ENV=development
+SECRET_KEY=dev-secret-key-change-in-production
+DATABASE_URL=sqlite:///crisis_commune.db
+DEEPGRAM_API_KEY=fde52962d81028ae4a1b5d75b4d3b15d94e0a547
+EOF
 
-Follow these steps:
+# Start backend server
+python app.py
+```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+#### 2. Frontend Setup
+```bash
+cd frontend
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Install dependencies
+npm install
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## 🎤 Deepgram Voice Agent
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Features
+- **Real-time Speech Recognition**: Powered by Deepgram's Nova-2 model
+- **Live Audio Streaming**: Continuous audio processing with interim results
+- **Connection Status**: Visual indicators for Deepgram connection state
+- **Error Handling**: Comprehensive error recovery and user feedback
+- **Agent Integration**: Seamlessly connected to existing agent system
 
-**Use GitHub Codespaces**
+### How to Use
+1. **Open your browser** and go to http://localhost:3000 (or 3001 if 3000 is in use)
+2. **Navigate to the Dashboard** to access the Deepgram Voice Agent
+3. **Allow microphone permissions** when prompted
+4. **Click the voice bubble** to start speaking
+5. **Speak naturally** - Deepgram will transcribe in real-time
+6. **Watch agent responses** as they process your emergency call
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## 🌐 Access Points
 
-## What technologies are used for this project?
+- **Frontend**: http://localhost:3000 (or 3001)
+- **Backend API**: http://localhost:5000
+- **Health Check**: http://localhost:5000/api/health
 
-This project is built with:
+## 🔧 API Endpoints
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### Core API
+- `GET /api/health` - Health check with Deepgram status
+- `GET /api/incidents` - List all incidents
+- `POST /api/incidents` - Create new incident
+- `GET /api/agents` - List all agents
+- `GET /api/logs` - Get system logs
+- `GET /api/agent-responses` - Get agent responses
 
-## How can I deploy this project?
+### Deepgram Voice API
+- `POST /api/voice/start` - Start voice session
+- `POST /api/voice/audio/{session_id}` - Send audio data
+- `GET /api/voice/transcript/{session_id}` - Get transcript
+- `POST /api/voice/stop/{session_id}` - Stop voice session
+- `GET /api/voice/transcript-stream` - Stream transcript updates
+- `POST /api/voice/process-emergency` - Process emergency call
 
-Simply open [Lovable](https://lovable.dev/projects/e6724fa2-879a-4c7e-aaec-9b08a4ce53e0) and click on Share -> Publish.
+## 🛠️ Development
 
-## Can I connect a custom domain to my Lovable project?
+### Running Both Servers
+```bash
+# From project root
+npm run dev  # Runs both backend and frontend concurrently
+```
 
-Yes, you can!
+### Individual Servers
+```bash
+# Backend only
+cd backend && source venv/bin/activate && python app.py
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+# Frontend only
+cd frontend && npm run dev
+```
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+### Environment Variables
+The application uses the following environment variables:
+- `FLASK_ENV`: Development mode
+- `SECRET_KEY`: Flask secret key
+- `DATABASE_URL`: Database connection string
+- `DEEPGRAM_API_KEY`: Your Deepgram API key (pre-configured)
+
+## 🎯 Features
+
+- **Incident Management**: Create, track, and manage emergency incidents
+- **AI Agent System**: Deploy AI agents for automated response
+- **Deepgram Voice Recognition**: Enterprise-grade speech recognition
+- **Real-time Logging**: Monitor system activities and agent responses
+- **Interactive Map**: Visualize incidents and agent locations
+- **Dashboard**: Comprehensive overview with voice interface
+- **Live Transcripts**: Real-time speech-to-text with interim results
+
+## 🔍 Troubleshooting
+
+### Voice Agent Not Connecting
+1. Check browser console for error messages
+2. Ensure microphone permissions are granted
+3. Verify backend is running on port 5000
+4. Check that Deepgram API key is valid
+
+### Port Conflicts
+- Backend: If port 5000 is in use, kill existing processes: `pkill -f "python app.py"`
+- Frontend: Vite will automatically use port 3001 if 3000 is occupied
+
+### Dependencies Issues
+```bash
+# Backend
+cd backend && source venv/bin/activate && pip install -r requirements.txt
+
+# Frontend
+cd frontend && npm install
+```
+
+## 📋 Requirements
+
+- **Python 3.8+**
+- **Node.js 18+**
+- **Microphone access** (for voice features)
+- **Modern browser** with WebRTC support
+
+## 🔑 Deepgram API Key
+
+The application comes pre-configured with a Deepgram API key. For production use, replace the key in the `.env` file with your own Deepgram API key.
+
+## 🎉 Success Indicators
+
+When everything is working correctly, you should see:
+- ✅ Backend health check shows `"deepgram_enabled": true`
+- ✅ Frontend loads without console errors
+- ✅ Voice bubble shows "🔗 Connected" status
+- ✅ Microphone permissions granted
+- ✅ Real-time transcription working
