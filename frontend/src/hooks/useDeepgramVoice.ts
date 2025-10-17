@@ -32,7 +32,7 @@ export const useDeepgramVoice = (options: DeepgramVoiceOptions = {}) => {
   const {
     model = 'nova-2',
     language = 'en-US',
-    sampleRate = 48000,  // Match browser's native opus sample rate
+    sampleRate = 16000,  // Use 16kHz for linear16 PCM
     channels = 1,
     interimResults = true
   } = options;
@@ -168,29 +168,37 @@ export const useDeepgramVoice = (options: DeepgramVoiceOptions = {}) => {
       // Setup transcript streaming
       setupTranscriptStream();
 
-      // Create media recorder
-      const mediaRecorder = new MediaRecorder(streamRef.current!, {
-        mimeType: 'audio/webm;codecs=opus',
-      });
-
-      mediaRecorderRef.current = mediaRecorder;
-      audioChunksRef.current = [];
-
-      mediaRecorder.ondataavailable = async (event) => {
-        if (event.data.size > 0) {
-          console.log(`Sending audio chunk: ${event.data.size} bytes`);
-          // Send audio immediately for streaming transcription
-          await sendAudioData(event.data);
+      // Use AudioWorklet or ScriptProcessor to capture raw PCM audio
+      const audioContext = audioContextRef.current!;
+      const source = audioContext.createMediaStreamSource(streamRef.current!);
+      
+      // Create a script processor to capture raw audio data
+      const bufferSize = 4096;
+      const processor = audioContext.createScriptProcessor(bufferSize, 1, 1);
+      
+      processor.onaudioprocess = async (e) => {
+        const inputData = e.inputBuffer.getChannelData(0);
+        
+        // Convert Float32Array to Int16Array (PCM 16-bit)
+        const pcmData = new Int16Array(inputData.length);
+        for (let i = 0; i < inputData.length; i++) {
+          // Clamp to prevent overflow and convert to 16-bit PCM
+          const s = Math.max(-1, Math.min(1, inputData[i]));
+          pcmData[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
         }
+        
+        // Send PCM data as raw bytes
+        const blob = new Blob([pcmData.buffer], { type: 'application/octet-stream' });
+        await sendAudioData(blob);
       };
-
-      mediaRecorder.onstop = () => {
-        console.log('MediaRecorder stopped');
-        audioChunksRef.current = [];
-      };
-
-      // Start recording - send chunks every 250ms for better real-time response
-      mediaRecorder.start(250);
+      
+      // Connect the nodes
+      source.connect(processor);
+      processor.connect(audioContext.destination);
+      
+      // Store processor reference for cleanup
+      (streamRef.current as any).audioProcessor = processor;
+      
       setIsListening(true);
       
     } catch (err) {
@@ -201,6 +209,13 @@ export const useDeepgramVoice = (options: DeepgramVoiceOptions = {}) => {
   // Stop listening
   const stopListening = useCallback(async () => {
     try {
+      // Stop audio processor if it exists
+      if (streamRef.current && (streamRef.current as any).audioProcessor) {
+        const processor = (streamRef.current as any).audioProcessor;
+        processor.disconnect();
+        delete (streamRef.current as any).audioProcessor;
+      }
+      
       if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
         mediaRecorderRef.current.stop();
       }

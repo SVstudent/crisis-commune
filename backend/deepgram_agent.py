@@ -74,13 +74,15 @@ class DeepgramVoiceAgent:
             print(f"Creating Deepgram connection for session: {session_id}")
             print(f"Using API key: {self.api_key[:10]}...")
 
-            # Configure for webm/opus audio from browser MediaRecorder
+            # Configure for browser MediaRecorder audio
+            # Note: Browser sends webm container, but we configure for the codec inside (opus)
+            # Deepgram can handle the webm container when encoding is set to the audio codec
             options = LiveOptions(
                 model="nova-2",
                 language="en-US",
                 smart_format=True,
-                encoding="opus",  # Changed from linear16 to opus for webm compatibility
-                sample_rate=48000,  # Opus typically uses 48kHz from browser
+                encoding="linear16",  # Use linear16 for better compatibility
+                sample_rate=16000,
                 channels=1,
                 interim_results=True,
                 endpointing=300,
@@ -118,26 +120,19 @@ class DeepgramVoiceAgent:
     def on_transcript(self, *args, **kwargs):
         """Handle transcript results"""
         try:
-            # Debug: Print what we're receiving
-            print(f"on_transcript called with args={len(args)}, kwargs keys={list(kwargs.keys())}")
-            
             # In Deepgram SDK v3+, result is a LiveResultResponse object, not a dict
             result = kwargs.get('result')
             if not result:
-                print("No result in kwargs")
                 return
             
-            # Debug: Print result type and structure
-            print(f"Result type: {type(result)}")
-            print(f"Result dir: {[attr for attr in dir(result) if not attr.startswith('_')]}")
-            
             # Try to convert to dict if it has a to_dict method
+            transcript = ''
+            is_final = False
+            
             if hasattr(result, 'to_dict'):
                 result_dict = result.to_dict()
-                print(f"Result as dict: {json.dumps(result_dict, indent=2)}")
                 
                 # Parse from dict
-                transcript = ''
                 is_final = result_dict.get('is_final', False)
                 
                 if 'channel' in result_dict:
@@ -145,61 +140,52 @@ class DeepgramVoiceAgent:
                     if 'alternatives' in channel and len(channel['alternatives']) > 0:
                         alternative = channel['alternatives'][0]
                         transcript = alternative.get('transcript', '')
+                        
+                # Only log when we actually have text
+                if transcript:
+                    print(f"🎤 Transcript: '{transcript}' (final={is_final})")
             else:
-                # Access object attributes instead of dict keys
-                transcript = ''
-                is_final = False
-                
-                # Check if result has the expected structure
+                # Fallback: try object attribute access if to_dict doesn't exist
+                is_final = getattr(result, 'is_final', False)
                 if hasattr(result, 'channel'):
                     channel = result.channel
-                    print(f"Channel type: {type(channel)}, dir: {[attr for attr in dir(channel) if not attr.startswith('_')]}")
                     if hasattr(channel, 'alternatives') and len(channel.alternatives) > 0:
                         alternative = channel.alternatives[0]
-                        print(f"Alternative type: {type(alternative)}, dir: {[attr for attr in dir(alternative) if not attr.startswith('_')]}")
                         if hasattr(alternative, 'transcript'):
                             transcript = alternative.transcript
-                
-                if hasattr(result, 'is_final'):
-                    is_final = result.is_final
+                            if transcript:
+                                print(f"🎤 Transcript: '{transcript}' (final={is_final})")
             
-            print(f"Extracted transcript: '{transcript}' (final={is_final})")
+            # Only continue processing if we have actual transcript text
+            if not transcript:
+                return
+            # Find the session for this connection
+            session_id = None
+            for sid, conn_data in self.connections.items():
+                # Match by connection object
+                if len(args) > 0 and conn_data['connection'] == args[0]:
+                    session_id = sid
+                    break
             
-            if transcript:
-                # Find the session for this connection
-                session_id = None
-                for sid, conn_data in self.connections.items():
-                    # Match by connection object
-                    if len(args) > 0 and conn_data['connection'] == args[0]:
-                        session_id = sid
-                        break
-                
-                if not session_id:
-                    # Fallback: use the first/only session if we can't match
-                    if len(self.connections) == 1:
-                        session_id = list(self.connections.keys())[0]
-                        print(f"Using fallback session: {session_id}")
-                
-                if session_id:
-                    print(f"Updating session {session_id} with transcript")
-                    if is_final:
-                        self.connections[session_id]['transcript'] += transcript + ' '
-                        self.connections[session_id]['interim_transcript'] = ''
-                    else:
-                        self.connections[session_id]['interim_transcript'] = transcript
-                    
-                    # Put transcript data in queue for processing
-                    self.transcript_queue.put({
-                        'session_id': session_id,
-                        'transcript': transcript,
-                        'is_final': is_final,
-                        'timestamp': time.time()
-                    })
-                    print(f"Added to queue. Queue size: {self.transcript_queue.qsize()}")
+            if not session_id:
+                # Fallback: use the first/only session if we can't match
+                if len(self.connections) == 1:
+                    session_id = list(self.connections.keys())[0]
+            
+            if session_id:
+                if is_final:
+                    self.connections[session_id]['transcript'] += transcript + ' '
+                    self.connections[session_id]['interim_transcript'] = ''
                 else:
-                    print("No session_id found!")
-            else:
-                print("No transcript text extracted")
+                    self.connections[session_id]['interim_transcript'] = transcript
+                
+                # Put transcript data in queue for processing
+                self.transcript_queue.put({
+                    'session_id': session_id,
+                    'transcript': transcript,
+                    'is_final': is_final,
+                    'timestamp': time.time()
+                })
                 
         except Exception as e:
             import traceback
