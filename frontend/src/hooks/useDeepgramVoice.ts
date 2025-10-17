@@ -32,7 +32,7 @@ export const useDeepgramVoice = (options: DeepgramVoiceOptions = {}) => {
   const {
     model = 'nova-2',
     language = 'en-US',
-    sampleRate = 16000,
+    sampleRate = 48000,  // Match browser's native opus sample rate
     channels = 1,
     interimResults = true
   } = options;
@@ -176,20 +176,21 @@ export const useDeepgramVoice = (options: DeepgramVoiceOptions = {}) => {
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
 
-      mediaRecorder.ondataavailable = (event) => {
+      mediaRecorder.ondataavailable = async (event) => {
         if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
+          console.log(`Sending audio chunk: ${event.data.size} bytes`);
+          // Send audio immediately for streaming transcription
+          await sendAudioData(event.data);
         }
       };
 
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        await sendAudioData(audioBlob);
+      mediaRecorder.onstop = () => {
+        console.log('MediaRecorder stopped');
         audioChunksRef.current = [];
       };
 
-      // Start recording
-      mediaRecorder.start(1000); // Send data every second
+      // Start recording - send chunks every 250ms for better real-time response
+      mediaRecorder.start(250);
       setIsListening(true);
       
     } catch (err) {

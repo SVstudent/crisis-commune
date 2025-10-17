@@ -6,7 +6,7 @@ python-dotenv==1.0.0
 marshmallow==3.20.1
 flask-marshmallow==0.15.0
 marshmallow-sqlalchemy==0.29.0
-psycopg2-binary==2.9.9
+# psycopg2-binary==2.9.9  # Commented out - only needed for PostgreSQL production
 gunicorn==21.2.0
 deepgram-sdk==3.2.7
 websockets==12.0

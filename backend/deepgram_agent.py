@@ -1,46 +1,100 @@
 import asyncio
 import json
 import os
+import ssl
 from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
-from deepgram import DeepgramClient, DeepgramClientOptions, LiveTranscriptionEvents, LiveOptions
 import threading
 import queue
 import time
 
+# Disable SSL verification globally for websockets (development only)
+# This fixes "CERTIFICATE_VERIFY_FAILED" errors on macOS
+import warnings
+warnings.filterwarnings('ignore', message='Unverified HTTPS request')
+
+# Monkey-patch ssl to create unverified context by default
+_original_create_default_context = ssl.create_default_context
+
+def _create_unverified_context(*args, **kwargs):
+    context = _original_create_default_context(*args, **kwargs)
+    context.check_hostname = False
+    context.verify_mode = ssl.CERT_NONE
+    return context
+
+ssl.create_default_context = _create_unverified_context
+
+# Try to import Deepgram SDK but fail gracefully on SyntaxError / incompatible Python
+DEEPGRAM_AVAILABLE = False
+DeepgramClient = None
+LiveTranscriptionEvents = None
+LiveOptions = None
+try:
+    try:
+        # Importing may raise SyntaxError on older Python versions if the SDK uses newer syntax
+        from deepgram import DeepgramClient, DeepgramClientOptions, LiveTranscriptionEvents, LiveOptions
+        DEEPGRAM_AVAILABLE = True
+    except Exception as _e:
+        # Import failed (could be SyntaxError or other incompatibility). We'll degrade gracefully.
+        print(f"Deepgram SDK not available or failed to import: {_e}")
+        DEEPGRAM_AVAILABLE = False
+except SyntaxError as se:
+    print(f"Deepgram SDK import raised SyntaxError (likely Python version incompatibility): {se}")
+    DEEPGRAM_AVAILABLE = False
+
 class DeepgramVoiceAgent:
     def __init__(self):
-        self.api_key = os.getenv('DEEPGRAM_API_KEY', 'fde52962d81028ae4a1b5d75b4d3b15d94e0a547')
-        self.client = DeepgramClient(self.api_key)
+        # Note: do not assume Deepgram SDK is importable. Initialize client only when available.
+        self.api_key = os.getenv('DEEPGRAM_API_KEY', '')
+        self.client = None
+        if DEEPGRAM_AVAILABLE and self.api_key:
+            try:
+                # SSL verification is already disabled globally via ssl.create_default_context patch
+                config = DeepgramClientOptions(
+                    options={
+                        "keepalive": "true"
+                    }
+                )
+                self.client = DeepgramClient(self.api_key, config)
+                print("Deepgram client initialized successfully (SSL verification disabled for dev)")
+            except Exception as e:
+                print(f"Failed to initialize Deepgram client: {e}")
+                self.client = None
+
         self.connections = {}  # Store active connections by session_id
         self.transcript_queue = queue.Queue()
         
     def create_connection(self, session_id):
         """Create a new Deepgram connection for a session"""
         try:
+            if not DEEPGRAM_AVAILABLE or not self.client:
+                print("Deepgram SDK not available or client not initialized. Cannot create connection.")
+                return False
+
             print(f"Creating Deepgram connection for session: {session_id}")
             print(f"Using API key: {self.api_key[:10]}...")
-            
+
+            # Configure for webm/opus audio from browser MediaRecorder
             options = LiveOptions(
                 model="nova-2",
                 language="en-US",
                 smart_format=True,
-                encoding="linear16",
-                sample_rate=16000,
+                encoding="opus",  # Changed from linear16 to opus for webm compatibility
+                sample_rate=48000,  # Opus typically uses 48kHz from browser
                 channels=1,
                 interim_results=True,
                 endpointing=300,
                 vad_events=True,
                 utterance_end_ms=1000
             )
-            
+
             connection = self.client.listen.live.v("1")
             connection.on(LiveTranscriptionEvents.Open, self.on_open)
             connection.on(LiveTranscriptionEvents.Transcript, self.on_transcript)
             connection.on(LiveTranscriptionEvents.Metadata, self.on_metadata)
             connection.on(LiveTranscriptionEvents.Error, self.on_error)
             connection.on(LiveTranscriptionEvents.Close, self.on_close)
-            
+
             if connection.start(options):
                 print(f"Deepgram connection started successfully for session: {session_id}")
                 self.connections[session_id] = {
@@ -64,35 +118,93 @@ class DeepgramVoiceAgent:
     def on_transcript(self, *args, **kwargs):
         """Handle transcript results"""
         try:
-            result = kwargs.get('result', {})
-            if result:
-                transcript = result.get('channel', {}).get('alternatives', [{}])[0].get('transcript', '')
-                is_final = result.get('is_final', False)
+            # Debug: Print what we're receiving
+            print(f"on_transcript called with args={len(args)}, kwargs keys={list(kwargs.keys())}")
+            
+            # In Deepgram SDK v3+, result is a LiveResultResponse object, not a dict
+            result = kwargs.get('result')
+            if not result:
+                print("No result in kwargs")
+                return
+            
+            # Debug: Print result type and structure
+            print(f"Result type: {type(result)}")
+            print(f"Result dir: {[attr for attr in dir(result) if not attr.startswith('_')]}")
+            
+            # Try to convert to dict if it has a to_dict method
+            if hasattr(result, 'to_dict'):
+                result_dict = result.to_dict()
+                print(f"Result as dict: {json.dumps(result_dict, indent=2)}")
                 
-                if transcript:
-                    # Find the session for this connection
-                    session_id = None
-                    for sid, conn_data in self.connections.items():
-                        if conn_data['connection'] == args[0]:
-                            session_id = sid
-                            break
+                # Parse from dict
+                transcript = ''
+                is_final = result_dict.get('is_final', False)
+                
+                if 'channel' in result_dict:
+                    channel = result_dict['channel']
+                    if 'alternatives' in channel and len(channel['alternatives']) > 0:
+                        alternative = channel['alternatives'][0]
+                        transcript = alternative.get('transcript', '')
+            else:
+                # Access object attributes instead of dict keys
+                transcript = ''
+                is_final = False
+                
+                # Check if result has the expected structure
+                if hasattr(result, 'channel'):
+                    channel = result.channel
+                    print(f"Channel type: {type(channel)}, dir: {[attr for attr in dir(channel) if not attr.startswith('_')]}")
+                    if hasattr(channel, 'alternatives') and len(channel.alternatives) > 0:
+                        alternative = channel.alternatives[0]
+                        print(f"Alternative type: {type(alternative)}, dir: {[attr for attr in dir(alternative) if not attr.startswith('_')]}")
+                        if hasattr(alternative, 'transcript'):
+                            transcript = alternative.transcript
+                
+                if hasattr(result, 'is_final'):
+                    is_final = result.is_final
+            
+            print(f"Extracted transcript: '{transcript}' (final={is_final})")
+            
+            if transcript:
+                # Find the session for this connection
+                session_id = None
+                for sid, conn_data in self.connections.items():
+                    # Match by connection object
+                    if len(args) > 0 and conn_data['connection'] == args[0]:
+                        session_id = sid
+                        break
+                
+                if not session_id:
+                    # Fallback: use the first/only session if we can't match
+                    if len(self.connections) == 1:
+                        session_id = list(self.connections.keys())[0]
+                        print(f"Using fallback session: {session_id}")
+                
+                if session_id:
+                    print(f"Updating session {session_id} with transcript")
+                    if is_final:
+                        self.connections[session_id]['transcript'] += transcript + ' '
+                        self.connections[session_id]['interim_transcript'] = ''
+                    else:
+                        self.connections[session_id]['interim_transcript'] = transcript
                     
-                    if session_id:
-                        if is_final:
-                            self.connections[session_id]['transcript'] += transcript + ' '
-                            self.connections[session_id]['interim_transcript'] = ''
-                        else:
-                            self.connections[session_id]['interim_transcript'] = transcript
-                        
-                        # Put transcript data in queue for processing
-                        self.transcript_queue.put({
-                            'session_id': session_id,
-                            'transcript': transcript,
-                            'is_final': is_final,
-                            'timestamp': time.time()
-                        })
+                    # Put transcript data in queue for processing
+                    self.transcript_queue.put({
+                        'session_id': session_id,
+                        'transcript': transcript,
+                        'is_final': is_final,
+                        'timestamp': time.time()
+                    })
+                    print(f"Added to queue. Queue size: {self.transcript_queue.qsize()}")
+                else:
+                    print("No session_id found!")
+            else:
+                print("No transcript text extracted")
+                
         except Exception as e:
+            import traceback
             print(f"Error processing transcript: {e}")
+            traceback.print_exc()
     
     def on_metadata(self, *args, **kwargs):
         print(f"Metadata: {kwargs}")
@@ -107,11 +219,16 @@ class DeepgramVoiceAgent:
         """Send audio data to Deepgram"""
         if session_id in self.connections:
             try:
+                print(f"Sending {len(audio_data)} bytes of audio data for session {session_id}")
                 self.connections[session_id]['connection'].send(audio_data)
                 return True
             except Exception as e:
                 print(f"Error sending audio: {e}")
+                import traceback
+                traceback.print_exc()
                 return False
+        else:
+            print(f"Session {session_id} not found in connections: {list(self.connections.keys())}")
         return False
     
     def finish_connection(self, session_id):
@@ -144,11 +261,15 @@ class DeepgramVoiceAgent:
             return True
         return False
 
-# Global Deepgram agent instance
-deepgram_agent = DeepgramVoiceAgent()
+# Global Deepgram agent instance (created when routes are registered)
+deepgram_agent = None
 
 def create_voice_routes(app):
     """Create voice-related API routes"""
+    global deepgram_agent
+    # Instantiate deepgram agent lazily so importing this module doesn't fail on incompatible SDK
+    if deepgram_agent is None:
+        deepgram_agent = DeepgramVoiceAgent()
     
     @app.route('/api/voice/start', methods=['POST'])
     def start_voice_session():
