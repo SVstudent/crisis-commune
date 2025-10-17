@@ -37,9 +37,11 @@ SECRET_KEY=dev-secret-key-change-in-production
 DATABASE_URL=sqlite:///crisis_commune.db
 
 # Deepgram API Configuration
-DEEPGRAM_API_KEY=fde52962d81028ae4a1b5d75b4d3b15d94e0a547
+# Get your API key from: https://console.deepgram.com/
+DEEPGRAM_API_KEY=your_deepgram_api_key_here
 EOF
-    echo "✅ Created .env file with Deepgram API key"
+    echo "✅ Created .env file - Please add your Deepgram API key!"
+    echo "⚠️  Edit backend/.env and replace 'your_deepgram_api_key_here' with your actual API key"
 else
     echo "⚠️  .env file already exists. Please ensure DEEPGRAM_API_KEY is set."
 fi
