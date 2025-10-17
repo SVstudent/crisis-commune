@@ -50,7 +50,7 @@ cat > .env << EOF
 FLASK_ENV=development
 SECRET_KEY=dev-secret-key-change-in-production
 DATABASE_URL=sqlite:///crisis_commune.db
-DEEPGRAM_API_KEY=fde52962d81028ae4a1b5d75b4d3b15d94e0a547
+DEEPGRAM_API_KEY=your_deepgram_api_key_here
 EOF
 
 # Start backend server
